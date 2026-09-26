@@ -1,0 +1,44 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Mock TTD Seva Date-only v0.5.5</title>
+<style>
+body{font-family:Arial,sans-serif;padding:24px;background:#fff7fb;color:#233443}.card{background:#fff;padding:20px;border-radius:16px;margin:12px 0;box-shadow:0 3px 14px #0002}.service{display:grid;grid-template-columns:1fr 1fr;gap:24px}.floating-input{padding:10px;width:100%;box-sizing:border-box}.months{display:flex;gap:20px}.month{width:430px}.month table{width:100%}td{padding:9px;text-align:center}.available{background:rgb(94,184,18);color:#fff;cursor:pointer;pointer-events:auto}.full{background:rgb(163,0,14);color:#fff;cursor:pointer;pointer-events:none}.selected{background:rgb(102,51,153)!important;color:#fff!important;pointer-events:none!important}.hidden{display:none}.actions{display:flex;justify-content:flex-end;gap:12px;margin-top:16px}.ticket-value{font-size:18px;font-weight:700}
+</style></head>
+<body>
+<h1>Arjitha Seva</h1>
+<div class="card"><h3>Service Name</h3><div class="service">
+  <input class="floating-input" label="Temple" name="templeSelected" readonly value="Sapthagiri Gau Pradakshina Shala-Tirupati">
+  <input class="floating-input" label="Select Seva" name="sevaSelected" readonly value="Sri Srinivasa Divyaanugraha Homam">
+</div></div>
+<div class="card"><h3>Seva Slots</h3><div class="months"><div class="month"><div>October 2026</div><table><tbody><tr>
+  <td id="19/9" class="full"><div>19</div></td>
+  <td id="20/9" class="available"><div>20</div></td>
+  <td id="21/9" class="available"><div>21</div></td>
+</tr></tbody></table></div></div></div>
+<div id="after-date" class="card hidden">
+  <div><span>No. of Tickets</span> <span class="ticket-value">01</span></div>
+  <h3>Additional Services (Optional)</h3>
+  <div><input class="floating-input" label="No. of Additional Laddus" type="tel" value=""></div>
+  <div><input class="floating-input" label="Hundi Offerings" type="tel" value=""></div>
+</div>
+<div class="actions"><button>Back</button><button id="continue" disabled>Continue</button></div>
+<script>
+let selected='';
+for(const td of document.querySelectorAll('td.available')) td.addEventListener('click',()=>{
+ document.querySelectorAll('td').forEach(x=>x.classList.remove('selected'));
+ td.classList.add('selected'); selected=td.textContent.trim();
+ document.getElementById('after-date').classList.remove('hidden');
+ document.getElementById('continue').disabled=false;
+});
+document.getElementById('continue').onclick=()=>{
+ if(!selected)return;
+ const laddu=document.querySelector('input[label="No. of Additional Laddus"]').value;
+ const hundi=document.querySelector('input[label="Hundi Offerings"]').value;
+ localStorage.setItem('mockBooking',JSON.stringify({
+   date:selected, isoDate:`2026-10-${String(selected).padStart(2,'0')}`, displayDate:`${String(selected).padStart(2,'0')}/10/2026`,
+   slot:'', tickets:1, mode:'date-only', temple:document.querySelector('[name=templeSelected]').value,
+   seva:document.querySelector('[name=sevaSelected]').value, additionalLaddus:Number(laddu||0), hundiAmount:Number(hundi||0)
+ }));
+ location.href='seva-pilgrims.html';
+};
+</script>
+</body></html>

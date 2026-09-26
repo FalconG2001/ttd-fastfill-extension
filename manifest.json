@@ -1,0 +1,46 @@
+{
+  "manifest_version": 3,
+  "name": "TTD FastFill",
+  "version": "0.5.5",
+  "description": "Adaptive TTD booking helper with service-context awareness, timed, Seva-card, and date-only seva support, DOM-first page recognition, general-details autofill, no-reload recovery, multi-date search, failure recovery, reduced-capacity fallback, and adaptive pilgrim filling.",
+  "permissions": [
+    "storage",
+    "tabs",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://ttdevasthanams.ap.gov.in/*",
+    "https://generativelanguage.googleapis.com/*"
+  ],
+  "background": {
+    "service_worker": "src/service-worker.js"
+  },
+  "action": {
+    "default_title": "TTD FastFill",
+    "default_popup": "src/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://ttdevasthanams.ap.gov.in/*"
+      ],
+      "js": [
+        "src/content.js"
+      ],
+      "run_at": "document_start"
+    }
+  ]
+}

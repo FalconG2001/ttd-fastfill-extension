@@ -1,0 +1,20 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Mock TTD Seva Review v0.5.5</title>
+<style>body{font-family:Arial;padding:24px;color:#233443;background:#fff7fb}.sevaReview_mainContainer__mock{background:#fff;padding:22px;border-radius:16px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:16px 0}.label{color:#667}.value{font-weight:700}button{padding:10px 18px;margin:8px}</style></head><body>
+<div class="sevaReview_mainContainer__mock">
+<h1>Review</h1><div class="grid">
+<div><div class="label">Seva Date</div><div class="value" id="date"></div></div>
+<div><div class="label">Temple</div><div class="value" id="temple"></div></div>
+<div><div class="label">Seva Name</div><div class="value" id="seva"></div></div>
+<div><div class="label">No. of Tickets</div><div class="value" id="tickets"></div></div>
+</div>
+<div id="extras"></div><h2>Pilgrim Details</h2><div id="people"></div>
+<button id="back">Back</button><button id="pay" class="sevaReview_confirmButton__mock">Pay Now</button>
+</div>
+<script>
+const b=JSON.parse(localStorage.getItem('mockBooking')||'{}'); const p=JSON.parse(localStorage.getItem('mockPilgrims')||'[]');
+document.getElementById('date').textContent=b.displayDate||'20/10/2026';
+document.getElementById('temple').textContent=b.temple||''; document.getElementById('seva').textContent=b.seva||''; document.getElementById('tickets').textContent=String(b.tickets||1).padStart(2,'0');
+document.getElementById('extras').textContent=`Additional laddus: ${b.additionalLaddus||0} · Hundi: ₹${b.hundiAmount||0}`;
+document.getElementById('people').textContent=p.map((x,i)=>`Pilgrim ${i+1}: ${x.name}`).join(' | ');
+document.getElementById('back').onclick=()=>location.href='seva-pilgrims.html'; document.getElementById('pay').onclick=()=>location.href='payment.html';
+</script></body></html>

@@ -1,0 +1,48 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Mock TTD Seva Pilgrims v0.5.5</title>
+<style>
+body{font-family:Arial;padding:24px;background:#fff7fb;color:#233443}.general,.row{display:grid;gap:10px;margin:12px 0}.general{grid-template-columns:repeat(3,1fr)}.row{grid-template-columns:2fr .7fr 1fr 1.2fr 1.5fr}.floating-input{padding:8px;width:100%}.dd{position:relative}.menu{position:absolute;left:0;right:0;top:36px;background:white;border:1px solid #ddd;z-index:10}.menu ul{list-style:none;margin:0;padding:4px}.menu li{padding:6px;cursor:pointer}.card{background:#fff;padding:18px;border-radius:16px;margin-bottom:16px}
+</style></head>
+<body>
+<div class="card"><h2>Seva Details</h2><p>Mock Sri Srinivasa Divyaanugraha Homam</p></div>
+<div class="card pilgrimDetails_container__O19WT">
+<h2>General Details</h2>
+<div class="general">
+  <input class="floating-input" label="Gothram" required type="text" name="gothram" value="">
+  <input class="floating-input" label="Email Address" required type="email" name="pilgrimEmail" value="">
+  <input class="floating-input" label="City" required type="text" name="pilgrimCity" value="">
+  <input class="floating-input" label="State" required type="text" name="pilgrimState" value="">
+  <input class="floating-input" label="Country" required type="text" name="pilgrimCountry" value="">
+  <input class="floating-input" label="Pincode" required type="tel" maxlength="6" name="pilgrimPincode" value="">
+</div>
+<h2>Pilgrim Details</h2>
+<p id="summary"></p><div id="rows"></div>
+<button id="back" class="pilgrimDetails_back-btn__VFbtO">Back</button>
+<button id="continue" class="pilgrimDetails_continue-btn__8mP8R">Continue</button>
+</div>
+<script>
+const booking=JSON.parse(localStorage.getItem('mockBooking')||'{}');
+// Mimic a seva where one ticket can admit two people.
+const count=Math.max(1,Number(booking.tickets||1)*2);
+document.getElementById('summary').textContent=`Mock seva rendered ${count} pilgrim row(s).`;
+const rows=document.getElementById('rows');
+for(let i=0;i<count;i++){
+ const row=document.createElement('div'); row.className='row pilDetails_mainContainer__HPFSL';
+ row.innerHTML=`<input class="floating-input" label="Name" name="name" value="">
+ <input class="floating-input" label="Age" name="age" type="tel" value="">
+ <div class="dd"><input class="floating-input" label="Gender" name="gender" readonly value=""><div class="menuhost"></div></div>
+ <div class="dd"><input class="floating-input" label="Photo ID Proof" name="idType" readonly disabled value=""><div class="menuhost"></div></div>
+ <input class="floating-input" label="Photo ID Number" name="idNumber" disabled value="">`;
+ rows.appendChild(row);
+}
+function setup(input, options, onSelect){input.addEventListener('click',()=>{if(input.disabled)return;const host=input.parentElement.querySelector('.menuhost');if(host.innerHTML){host.innerHTML='';return;}host.innerHTML='<div class="menu"><ul>'+options.map(x=>'<li>'+x+'</li>').join('')+'</ul></div>';host.querySelectorAll('li').forEach(li=>li.onclick=(e)=>{e.stopPropagation();input.value=li.textContent;input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));host.innerHTML='';onSelect?.(input);});});}
+document.querySelectorAll('input[name="gender"]').forEach(i=>setup(i,['Female','Male','Transgender'],(input)=>{input.closest('.row').querySelector('input[name="idType"]').disabled=false;}));
+document.querySelectorAll('input[name="idType"]').forEach(i=>setup(i,['Aadhaar Card','Passport'],(input)=>{input.closest('.row').querySelector('input[name="idNumber"]').disabled=false;}));
+document.getElementById('back').onclick=()=>location.href=booking.mode==='date-only'?'seva-date-only.html':'slot.html';
+document.getElementById('continue').onclick=()=>{
+ const general={}; ['gothram','pilgrimEmail','pilgrimCity','pilgrimState','pilgrimCountry','pilgrimPincode'].forEach(n=>general[n]=document.querySelector(`[name="${n}"]`).value);
+ const people=[...document.querySelectorAll('.row')].map(row=>({name:row.querySelector('[name=name]').value,age:row.querySelector('[name=age]').value,gender:row.querySelector('[name=gender]').value,idType:row.querySelector('[name=idType]').value,idNumber:row.querySelector('[name=idNumber]').value}));
+ localStorage.setItem('mockGeneral',JSON.stringify(general)); localStorage.setItem('mockPilgrims',JSON.stringify(people)); location.href=booking.mode==='date-only'?'seva-review.html':'review.html';
+};
+</script>
+</body></html>

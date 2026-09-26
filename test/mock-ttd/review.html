@@ -1,0 +1,14 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Mock TTD Review v0.5</title><style>body{font-family:Arial;padding:24px;color:#233443}table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:8px}</style></head><body>
+<h1>Review Details</h1>
+<div>Darshan Date <strong id="date"></strong></div>
+<div>Darshan Slot <strong id="slot"></strong></div>
+<div>No. of Tickets <strong id="tickets"></strong></div>
+<h2>Pilgrim Details</h2><div id="people"></div>
+<button id="back">Back</button><button id="pay">Pay Now</button>
+<script>
+const b=JSON.parse(localStorage.getItem('mockBooking')||'{}'); const p=JSON.parse(localStorage.getItem('mockPilgrims')||'[]');
+const time={"0800":"8:00 AM","1500":"3:00 PM","1600":"4:00 PM"};
+document.getElementById('date').textContent=String(b.date||'17').padStart(2,'0')+'/09/2026'; document.getElementById('slot').textContent=time[b.slot]||'3:00 PM'; document.getElementById('tickets').textContent=b.tickets||1;
+document.getElementById('people').textContent=p.map((x,i)=>`Pilgrim ${i+1}: ${x.name} · ${x.gothram}`).join(' | ');
+document.getElementById('back').onclick=()=>location.href='pilgrims.html'; document.getElementById('pay').onclick=()=>location.href='payment.html';
+</script></body></html>

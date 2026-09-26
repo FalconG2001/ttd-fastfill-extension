@@ -257,4 +257,3 @@ Gemini receives sanitized metadata such as label, name/id pattern, control type,
 ## Important limitation
 
 v0.5.5 can only select dates currently rendered in TTD's calendar DOM. It does not yet page through calendar months automatically.
-# ttd-fastfill-extension

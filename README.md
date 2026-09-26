@@ -1,259 +1,162 @@
 # TTD FastFill v0.5.5
 
-Chrome / Chromium Manifest V3 extension for quickly completing TTD booking forms **after TTD itself allows the user through its official queue**.
+TTD FastFill is a Chrome/Chromium extension that helps users complete booking forms on the official [TTD Online Services website](https://ttdevasthanams.ap.gov.in/home/dashboard) after TTD allows them through its queue.
 
-## What v0.5.5 adds
+It prepares booking preferences and pilgrim details in advance, watches the normal TTD booking flow, and fills supported fields when they appear. It is intended to reduce repetitive typing and avoid mistakes during time-sensitive Darshan and Arjitha Seva bookings.
 
-v0.5.5 keeps the Arjitha Seva service-context behavior from v0.5.4 and adds two live-site fixes. Ticket selectors that display zero-padded values such as `01` / `02` are now handled numerically without losing TTD's display value. Also, after a date is selected FastFill first checks for explicit `Slot Time` cards; if none exist, it can detect the alternate Seva-card layout and select the first card whose displayed availability is greater than 1.
+> [!IMPORTANT]
+> TTD FastFill is an independent helper and is not affiliated with or endorsed by Tirumala Tirupati Devasthanams. It does not bypass the official queue, login, CAPTCHA, OTP, availability checks, booking limits, payment authentication, or any other TTD control. Availability and a successful booking are never guaranteed.
 
-A selected seva can now use either of these flows:
+## Demo
 
-- **Timed seva:** date → preferred time / any available time → ticket count → optional laddus/hundi → Continue.
-- **Date-only seva:** date → ticket count if TTD exposes one (or TTD's fixed count) → optional laddus/hundi → Continue. Preferred times are ignored when no time-slot controls exist.
+[![Watch the TTD FastFill demo](docs/assets/connection-and-booking-search.webp)](docs/assets/ttd-fastfill-demo.mp4)
 
-The calendar lookup also handles TTD's duplicate day IDs across adjacent month tables by checking the month/year heading before clicking a day. Full, unreleased, and unavailable days are skipped based on their actual interaction state.
+**[▶ Watch the demo video](docs/assets/ttd-fastfill-demo.mp4)**
 
-Live Inspector now reports the selected Temple, selected Seva, visible time-slot count, and whether a ticket selector/fixed ticket count is visible.
+## Why we created it
 
-## What v0.5 fixes
+TTD booking sessions can involve a queue followed by several forms that must be completed quickly. Users may need to repeatedly enter dates, times, ticket preferences, contact information, Gothram details, and pilgrim identity information. If a slot disappears, the same process may need to be repeated for another date or time.
 
-TTD does not use one pilgrim form shape everywhere. The newer seva page captured for Sri Srinivasa Divyaanugraha Homam uses:
+FastFill was created to make that process less stressful by:
 
-- booking-level fields: `gothram`, `pilgrimEmail`, `pilgrimCity`, `pilgrimState`, `pilgrimCountry`, `pilgrimPincode`
-- pilgrim rows: `name`, `age`, `gender`, `idType`, `idNumber`
+- keeping preferred dates and times in priority order;
+- filling supported booking and pilgrim fields from a saved setup;
+- adapting to the different form layouts used by Darshan and Arjitha Seva pages;
+- selecting the highest allowed ticket count when TTD offers fewer tickets than requested;
+- recovering from recognized availability failures and trying the next configured option; and
+- attaching to an already-open TTD tab without forcing a refresh.
 
-Older darshan pages use names such as `fname`, `photoIdType`, and `idProofNumber`. v0.5 recognizes both schemas. It also recognizes the visible DOM before trusting the URL because TTD's Next.js page can show pilgrim details while the route still looks like `/curtain` or `/spat/slot-booking`.
+FastFill only acts on controls that TTD presents in the user's existing browser session. TTD remains the source of truth for availability, ticket counts, pilgrim rows, booking rules, and payment.
 
-The popup now includes **General details** for Gothram, email, city, state, country, and pincode. These values are only filled when the current TTD form actually contains those fields. If Gothram is a normal text field, FastFill uses the saved spelling exactly.
+## Main features
 
-FastFill does not bypass the queue, login, CAPTCHA, OTP, or payment authentication. It operates on the normal TTD pages in the user's existing browser session and stops at the payment gateway.
+- Ordered preferred dates and times
+- Optional fallback to any available time
+- Timed, date-only, and Seva-card booking layouts
+- Ticket-count fallback, including zero-padded values such as `01` and `02`
+- Multiple pilgrim profiles in priority order
+- General details including Gothram, email, city, state, country, and pincode
+- Optional additional laddus and Hundi amount
+- Recognized failure-popup recovery with a configurable attempt limit
+- Live page inspector and queue/countdown observation
+- No-reload attachment for an existing TTD tab
+- Local adaptive-field learning and an optional sanitized Gemini fallback
 
-## What v0.4.1 added
+## Install
 
-### No-reload attachment and recovery
+1. Download and extract the latest release ZIP.
+2. Open `chrome://extensions` and enable **Developer mode**.
+3. Click **Load unpacked** and select the extracted folder containing `manifest.json`.
+4. Confirm that **TTD FastFill v0.5.5** is enabled.
 
-FastFill now loads at `document_start` on TTD pages. If the TTD tab was already open before FastFill was installed/reloaded, the popup can inject the current content script into that existing tab with **Attach without reload**. This preserves the TTD page/queue state.
+If a TTD page or queue is already open, do **not** refresh it. Open FastFill and select **Attach without reload**.
 
-`Start on this page`, `Live inspector`, and `Re-detect` also attempt no-reload attachment automatically. An unrecognized page is treated as **UNKNOWN / still watching**, not as a fatal error.
+## How to use
 
-Important when upgrading while already in a TTD queue: disable/remove the older FastFill extension, load v0.5.5, then use **Attach without reload** on the existing TTD tab. Do not refresh the TTD tab.
+### 1. Open the official TTD website
 
-### Live countdown inspector
+Visit the [TTD Online Services dashboard](https://ttdevasthanams.ap.gov.in/home/dashboard), sign in normally, complete any CAPTCHA or OTP yourself, and enter the required official queue.
 
-The inspector now stays live while the popup remains open. When a TTD queue/countdown is detectable, it shows the current countdown and updates it approximately twice per second. It also reports:
+### 2. Configure the booking search
 
-- FastFill connection/version,
-- detected page state,
-- current URL,
-- DOM watcher state,
-- URL/sanity watcher state,
-- last DOM/route change,
-- detected pilgrim fields when present.
+Open the extension and add preferred dates and times in priority order. Choose the maximum number of tickets you want and, when appropriate, allow FastFill to use any available time after the preferred choices are exhausted.
 
-FastFill only observes the official queue/countdown. It does not bypass it or refresh the page.
+FastFill uses the Temple and Seva already selected on the TTD page. It does not change those selections automatically.
 
-### Reliability watchers
+<p align="center">
+  <img src="docs/assets/date-time-preferences.webp" alt="Preferred dates, times and ticket settings" width="520">
+</p>
 
-In addition to DOM observation, v0.4.1 watches URL changes and performs a lightweight local sanity check while a run is active. This helps detect Next.js transitions even when there is no full navigation.
+For a timed service, FastFill tries each configured date/time combination in order. For a date-only Seva, it ignores the preferred-time list and continues with the date and ticket count. On supported Seva-card pages, it selects the first qualifying available card.
 
-## What v0.4 adds
+### 3. Configure ticket and recovery behavior
 
-### Multiple dates and times
+The requested ticket count is a maximum. If fewer tickets are available, FastFill uses the highest amount TTD currently allows. The actual pilgrim rows rendered by TTD remain authoritative.
 
-Dates and times are ordered priorities. Example:
+You can also allow FastFill to close recognized availability-error dialogs and try the next date/time, up to the configured maximum number of attempts.
 
-- Dates: Sep 17, Sep 18, Sep 19
-- Times: 3:00 PM, 4:00 PM, 5:00 PM
+<p align="center">
+  <img src="docs/assets/tickets-and-recovery.webp" alt="Ticket, optional service and failure recovery settings" width="520">
+</p>
 
-FastFill tries them in this order:
+Keep automatic final review/payment clicking disabled during your first tests. Always review TTD's booking summary before proceeding.
 
-1. Sep 17 / 3:00 PM
-2. Sep 17 / 4:00 PM
-3. Sep 17 / 5:00 PM
-4. Sep 18 / 3:00 PM
-5. ...
+### 4. Add general details
 
-If **Any available time** is enabled, other available times on a date are considered after the preferred times.
+Some Seva forms request booking-level details before the individual pilgrim rows. Save only the information you want FastFill to enter when matching fields appear.
 
-### Failure recovery
+For Gothram text fields, FastFill uses the saved spelling. If TTD presents a dropdown, it can match a clear spelling variation against TTD's current options; ambiguous matches require user confirmation.
 
-When a selected slot looked available but TTD returns a recognized failure popup, FastFill:
+<p align="center">
+  <img src="docs/assets/general-details.webp" alt="General booking details and Gothram settings" width="520">
+</p>
 
-1. marks that exact date/time combination failed,
-2. closes the popup,
-3. returns to the slot page using TTD's own **Back** button when required,
-4. tries the next configured combination.
+### 5. Add pilgrim profiles
 
-The same combination is not submitted repeatedly. A configurable maximum-attempt limit is also enforced.
+Add the pilgrims in priority order. When TTD renders fewer pilgrim rows than the number of prepared profiles, FastFill fills only the first profiles up to TTD's allowed count. It stops instead of inventing a pilgrim when TTD renders more rows than the saved setup can supply.
 
-Because TTD has several dialog implementations and can change them, failure detection is intentionally conservative. If a new popup is not recognized, FastFill stops instead of blindly clicking through it. Use **Inspect page** and capture the rendered popup HTML so the detector can be hardened.
+<p align="center">
+  <img src="docs/assets/pilgrim-profile-one.webp" alt="First pilgrim profile" width="420">
+  <img src="docs/assets/pilgrim-profile-two-and-storage.webp" alt="Second pilgrim profile and storage settings" width="420">
+</p>
 
-### Requested 4, but TTD only allows 2
+### 6. Save and start
 
-The **Requested tickets** value is treated as a maximum.
+1. Select **Save setup**.
+2. Return to the appropriate TTD booking page.
+3. Open FastFill and select **Start on this page**.
+4. Use **Live inspector** if you want to see the detected page state and controls.
+5. Verify the final booking summary before continuing to payment.
 
-Example:
+<p align="center">
+  <img src="docs/assets/connection-and-booking-search.webp" alt="FastFill connection and start controls" width="520">
+</p>
 
-- Requested tickets: 4
-- TTD ticket dropdown currently offers only: 1, 2
-- FastFill selects: 2
+## Privacy and storage
 
-After Continue, TTD's actual pilgrim row count is authoritative. If TTD renders 2 pilgrim rows while 4 profiles were prepared, FastFill fills:
+Pilgrim details use Chrome session storage by default. They are retained in `chrome.storage.local` only when **Remember pilgrim ID details after Chrome closes** is enabled. ID numbers are sensitive, so persistent storage should be enabled only when needed.
 
-- Pilgrim 1
-- Pilgrim 2
+Learned field mappings, adaptive answers, and confirmed Gothram aliases are stored locally and can be removed with **Clear learned fields**. **Clear details** removes the configured booking and pilgrim information.
 
-and ignores Pilgrims 3 and 4 for that booking attempt. Profile order is therefore priority order.
+Gemini fallback is optional and disabled by default. When enabled, it is used only after deterministic and learned field matching fail. It receives sanitized field metadata—not pilgrim names or identity numbers—and never chooses a personal value.
 
-FastFill never invents a missing pilgrim. If TTD renders more rows than the number of prepared profiles, it stops.
+## Safe-use recommendations
 
-### Gothram matching
+- Install only from a release or source that you trust.
+- Start with **Click the final review/payment button automatically** turned off.
+- Verify the selected date, time, ticket count, service, and pilgrim details on TTD's review page.
+- Do not refresh an active TTD queue merely to attach FastFill.
+- Do not share screenshots or recordings containing real personal or identity information.
+- Stop the extension if the live TTD page no longer matches the expected flow.
 
-For a normal text field, FastFill enters the saved value as typed.
+## What changed in v0.5.5
 
-For a TTD dropdown, it reads the live options and resolves the saved text using:
+- Fixed zero-padded ticket selectors such as `01` and `02`.
+- Treated disabled ticket inputs as fixed TTD counts instead of clickable dropdowns.
+- Added fallback support for pages that show Seva cards instead of explicit time-slot controls.
+- Skipped Seva cards with zero or one available booking and supported trying the next qualifying card after a recognized rejection.
+- Added selected-date recognition for headings such as `Select any 1 Seva: Dated 28 Oct,2026`.
+- Expanded Live Inspector reporting for Seva-card availability.
 
-1. exact normalized match,
-2. a unique prefix match (minimum 3 characters),
-3. conservative fuzzy string similarity.
+See [CHANGELOG.md](CHANGELOG.md) for the complete version history.
 
-Examples that can resolve to a TTD option `Kashyapa` when unambiguous:
+## Development and local testing
 
-- `kasyapa`
-- `kasyappa`
-- `kas`
-
-If more than one TTD option is plausible, FastFill asks the user instead of guessing. Confirmed aliases are learned locally.
-
-The built-in Gothram list in the popup is only a convenience suggestion list. The live TTD dropdown spelling is authoritative.
-
-## Install production build
-
-1. Unzip the production build ZIP.
-2. Open `chrome://extensions`.
-3. Enable **Developer mode**.
-4. Click **Load unpacked**.
-5. Select the extracted build folder.
-6. Verify the extension version is `0.5.5`.
-7. If a TTD page is already open, **do not reload it**. Open FastFill and click **Attach without reload** (or Start/Live inspector, which auto-attach).
-
-## Recommended first live test
-
-Turn **Auto Pay Now** off.
-
-Use a low-demand darshan first and configure two dates / two times. Confirm:
-
-- date priority,
-- time priority,
-- requested ticket fallback,
-- pilgrim row count behavior,
-- review date/time/ticket values.
-
-Only enable automatic Pay Now after the review page has been validated manually at least once.
-
-## Local v0.5.5 mock tests
-
-For the alternate **Seva card** flow captured from the live site, open:
-
-```text
-http://localhost:4173/seva-card.html
-```
-
-Suggested setup: preferred date `2026-10-28`, requested tickets `1`, Auto Pay Now OFF. Expected behavior: FastFill sees no explicit `Slot Time` cards, ignores the card showing `0 Available`, selects the first card with more than 1 available, accepts the fixed/disabled `01` ticket count, and continues.
-
-
-The repo contains fake TTD pages for both the older darshan schema and the newer seva schema.
-
-From the repo root:
+The repository includes mock TTD pages for queue, slot, pilgrim, review, date-only Seva, and Seva-card flows.
 
 ```bash
 python3 scripts/manifest_mode.py test
 python3 -m http.server 4173 --directory test/mock-ttd
 ```
 
-Then reload the extension at `chrome://extensions`.
+Open the required mock page at `http://localhost:4173`, reload the unpacked extension, and test with automatic final payment clicking disabled.
 
-For the queue/countdown + no-reload inspector test, open:
-
-```text
-http://localhost:4173/queue.html
-```
-
-Click **Live inspector**. The countdown should update. You can reload/disable-enable the extension itself and then click **Attach without reload**; the queue page should not need to be refreshed.
-
-
-
-For the new **Arjitha Seva date-only** flow, open:
-
-```text
-http://localhost:4173/seva-date-only.html
-```
-
-Suggested setup:
-
-- Preferred date: `2026-10-20`
-- Requested tickets: `4` (the mock seva has a fixed 1 ticket)
-- Additional laddus: any non-zero test value, for example `2`
-- Hundi: any non-zero test value, for example `100`
-- Auto Pay Now: OFF for the first run
-
-Expected behavior: FastFill keeps the existing Temple/Seva, selects Oct 20, detects that there is no time-slot panel, accepts TTD's fixed ticket count, fills the optional service values, continues to the seva pilgrim form, fills General Details and the actual pilgrim rows, then stops on the seva review page. Turn Auto Pay Now on only after that review has been checked.
-
-For the new seva pilgrim-form recognition test, open:
-
-```text
-http://localhost:4173/seva-pilgrims.html
-```
-
-Before opening it, save a setup with at least two pilgrim profiles plus the General Details you want to test. The mock renders booking-level Gothram/email/city/state/country/pincode and the newer `name` / `idType` / `idNumber` pilgrim schema. Live Inspector should report `Page state: PILGRIMS` and `pilgrim schema=seva`.
-
-For the booking-flow test, open:
-
-```text
-http://localhost:4173/slot.html
-```
-
-Suggested setup:
-
-- Dates: 2026-09-17, 2026-09-18
-- Times: 15:00, 16:00
-- Requested tickets: 4
-- Pilgrim profiles: 4
-- Persons per ticket: Auto
-- Auto recovery: ON
-- Auto Pay Now: OFF
-- Gothram for the first two pilgrims: `kasyapa` or `kasyappa`
-
-The mock is intentionally configured so that:
-
-- Sep 17 / 3:00 PM fails once with a popup,
-- FastFill should close the popup and move to Sep 17 / 4:00 PM,
-- the ticket dropdown offers only 1 or 2, so requested 4 becomes 2,
-- the pilgrim page renders only 2 rows,
-- FastFill fills only Pilgrim 1 and Pilgrim 2,
-- the Gothram dropdown contains `Kashyapa`, so a close spelling should resolve automatically,
-- the extension should stop on the review page because Auto Pay Now is off.
-
-After local testing, restore production mode:
+Restore production mode after testing:
 
 ```bash
 python3 scripts/manifest_mode.py prod
 ```
 
-Then reload the extension again.
+## Current limitation
 
-## Storage
-
-By default, pilgrim details are kept in Chrome session storage. If **Remember pilgrim ID details** is enabled, they are saved to `chrome.storage.local`.
-
-Learned form mappings, adaptive answers, and Gothram aliases are stored locally. They can be cleared with **Clear learned fields**.
-
-## Gemini fallback
-
-Gemini is optional and disabled by default. It is only used to classify an unknown field after deterministic and learned matching fail.
-
-Gemini receives sanitized metadata such as label, name/id pattern, control type, scope, and option text. It should never receive pilgrim names or Photo ID numbers, and it never invents personal values.
-
-## Important limitation
-
-v0.5.5 can only select dates currently rendered in TTD's calendar DOM. It does not yet page through calendar months automatically.
+FastFill can select only dates currently rendered in TTD's calendar. It does not automatically move between calendar months.
